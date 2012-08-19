@@ -12,6 +12,7 @@
 namespace Assetic\Test\Filter;
 
 use Assetic\Asset\StringAsset;
+use Assetic\Asset\FileAsset;
 use Assetic\Filter\StylusFilter;
 
 /**
@@ -23,11 +24,11 @@ class StylusFilterTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        if (!isset($_SERVER['STYLUS_BIN']) || !isset($_SERVER['NODE_BIN']) || !isset($_SERVER['NODE_PATH'])) {
+        if (!isset($_SERVER['STYLUS_BIN']) || !isset($_SERVER['NODE_PATH'])) {
             $this->markTestSkipped('No node.js configuration.');
         }
 
-        $this->filter = new StylusFilter($_SERVER['STYLUS_BIN'], $_SERVER['NODE_BIN'], array($_SERVER['NODE_PATH']));
+        $this->filter = new StylusFilter($_SERVER['STYLUS_BIN'], array($_SERVER['NODE_PATH']));
     }
 
     public function testFilterLoad()
@@ -53,12 +54,12 @@ class StylusFilterTest extends \PHPUnit_Framework_TestCase
 
     public function testFilterLoadWithUseNib()
     {
-        $asset = new StringAsset("@import 'nib'\nbody\n  whitespace nowrap\n  font 12px Helvetica, Arial, sans-serif\n  color black");
+        $asset = new FileAsset(__DIR__."/fixtures/stylus/test_nib.styl");
         $asset->load();
 
         $this->filter->setUseNib(true);
         $this->filter->filterLoad($asset);
 
-        $this->assertEquals("body {\n  white-space: nowrap;\n  font: 12px Helvetica, Arial, sans-serif;\n  color: #000;\n}\n\n", $asset->getContent(), '->filterLoad() parses the content using the nib extension');
+        $this->assertStringEqualsFile(__DIR__."/fixtures/stylus/compiled/test_nib.css", $asset->getContent(), 'nib plugin has failed');
     }
 }
