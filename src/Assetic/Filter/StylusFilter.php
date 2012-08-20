@@ -30,6 +30,8 @@ class StylusFilter implements FilterInterface
     // Stylus options
     private $compress;
     private $useNib;
+    private $imports;
+    private $markContext;
 
     /**
      * Constructs filter.
@@ -37,12 +39,21 @@ class StylusFilter implements FilterInterface
      * @param string $stylusPath      The path to the stylus binary
      * @param string $nodePath        The path to the node binary
      * @param array  $nodeModulesPath An array of node paths
+
+     TODO
+        Modificar la extension para agregar un tag para agregar los import
+        Agregar un CompilerPass que inyecte los imports de los tags al filtro
+
+        Buscar una manera de poder separar los import globales de los que 
+        solo aplican para los style que estan siendo declarados en la etiqueta,
+        funcion twig y/o formula config
      */
     public function __construct($stylusPath = '/usr/bin/stylus', $nodePath = '/usr/bin/node', array $nodeModulesPath = array())
     {
         $this->stylusPath = $stylusPath;
         $this->nodePath = $nodePath;
         $this->modulesPath = $nodeModulesPath;
+        $this->imports=array();
     }
 
     /**
@@ -66,10 +77,42 @@ class StylusFilter implements FilterInterface
     }
 
     /**
+     * Inject the context character mark
+     *
+     * @param   string     $markContext
+     */
+    public function setMarkContext($markContext)
+    {
+        $this->markContext = $markContext;
+    }
+
+    /**
+     * Add import declared on config files
+     *
+     * @param   string     $markContext
+     */
+    public function addImport($import)
+    {
+        array_push($this->imports, $import);
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function filterLoad(AssetInterface $asset)
     {
+        $root = $asset->getSourceRoot();
+        $path = $asset->getSourcePath();
+
+        //scan the asset for tag context
+        $context = strpos($asset->getContent(), $this->markContext);
+        if($context!==false){
+            if ($root && $path) {
+                array_push($this->imports, $root.'/'.$path);
+                return;
+            }
+        }
+
         $pb = new ProcessBuilder(array(
             $this->nodePath,
             $this->stylusPath,
@@ -82,9 +125,6 @@ class StylusFilter implements FilterInterface
             ;
         }
 
-        $root = $asset->getSourceRoot();
-        $path = $asset->getSourcePath();
-        
         if ($root && $path) {
             $pb
                 ->add('--include')
@@ -102,6 +142,13 @@ class StylusFilter implements FilterInterface
                 ->add('nib')
                 ->add('--import')
                 ->add('nib')
+            ;
+        }
+
+        foreach($this->imports as $import){
+            $pb
+                ->add('--import')
+                ->add($import)
             ;
         }
 
@@ -123,5 +170,11 @@ class StylusFilter implements FilterInterface
      */
     public function filterDump(AssetInterface $asset)
     {
+        //scan the asset for tag context
+        $context = strpos($asset->getContent(), $this->markContext);
+        if($context!==false){
+            $asset->setContent('');
+        }
+
     }
 }
