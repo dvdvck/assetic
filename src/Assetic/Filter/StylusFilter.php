@@ -24,6 +24,7 @@ use Symfony\Component\Process\ProcessBuilder;
 class StylusFilter implements FilterInterface
 {
     private $stylusPath;
+    private $nodePath;
     private $modulesPath;
 
     // Stylus options
@@ -34,11 +35,13 @@ class StylusFilter implements FilterInterface
      * Constructs filter.
      *
      * @param string $stylusPath      The path to the stylus binary
+     * @param string $nodePath        The path to the node binary
      * @param array  $nodeModulesPath An array of node paths
      */
-    public function __construct($stylusPath = '/usr/bin/stylus', array $nodeModulesPath = array())
+    public function __construct($stylusPath = '/usr/bin/stylus', $nodePath = '/usr/bin/node', array $nodeModulesPath = array())
     {
         $this->stylusPath = $stylusPath;
+        $this->nodePath = $nodePath;
         $this->modulesPath = $nodeModulesPath;
     }
 
@@ -68,6 +71,7 @@ class StylusFilter implements FilterInterface
     public function filterLoad(AssetInterface $asset)
     {
         $pb = new ProcessBuilder(array(
+            $this->nodePath,
             $this->stylusPath,
         ));
 

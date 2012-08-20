@@ -24,11 +24,11 @@ class StylusFilterTest extends \PHPUnit_Framework_TestCase
 
     protected function setUp()
     {
-        if (!isset($_SERVER['STYLUS_BIN']) || !isset($_SERVER['NODE_PATH'])) {
+        if (!isset($_SERVER['STYLUS_BIN']) || !isset($_SERVER['NODE_BIN']) || !isset($_SERVER['NODE_PATH'])) {
             $this->markTestSkipped('No node.js configuration.');
         }
 
-        $this->filter = new StylusFilter($_SERVER['STYLUS_BIN'], array($_SERVER['NODE_PATH']));
+        $this->filter = new StylusFilter($_SERVER['STYLUS_BIN'], $_SERVER['NODE_BIN'], array($_SERVER['NODE_PATH']));
     }
 
     public function testFilterLoad()
