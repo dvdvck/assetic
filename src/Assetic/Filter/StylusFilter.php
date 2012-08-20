@@ -100,6 +100,8 @@ class StylusFilter implements FilterInterface
             $pb
                 ->add('--use')
                 ->add('nib')
+                ->add('--import')
+                ->add('nib')
             ;
         }
 
