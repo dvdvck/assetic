@@ -171,10 +171,16 @@ class StylusFilter implements FilterInterface
     public function filterDump(AssetInterface $asset)
     {
         //scan the asset for tag context
-        $context = strpos($asset->getContent(), $this->markContext);
-        if($context!==false){
-            $asset->setContent('');
-        }
+        // $context = strpos($asset->getContent(), $this->markContext);
+        // if($context!==false){
+        //     // $asset->setContent('');
+        //     // return;
+        // }
 
+        $currentVal = $asset->getValues();
+
+        foreach($currentVal as $var =>$val){
+            $asset->setContent($var.'='.$val.$asset->getContent());
+        }
     }
 }
